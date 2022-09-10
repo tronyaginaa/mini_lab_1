@@ -255,5 +255,6 @@ if __name__ == "__main__":
     # init first entry (создаем первое поле ввода)
     entries_main.add_entry()
     app.create_menu()
+    # добавил комментарий для коммита
     # application launch (запуск "вечного" цикла приложеня)
     app.mainloop()
