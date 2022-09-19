@@ -7,6 +7,7 @@ import numpy as np
 from functools import partial
 from tkinter import *
 from tkinter.filedialog import asksaveasfile
+from tkinter.filedialog import askopenfile
 import tkinter.messagebox as mbox
 
 from matplotlib import pyplot as plt
@@ -120,6 +121,13 @@ class Commands:
                 json.dump(tmp_dict, file_out)
             return self
 
+        def load_state(self):
+            file_in = askopenfile(defaultextension=".json")
+            if file_in is not None:
+                functions = json.load(file_in)
+                if functions['list_of_function'] is not None:
+                    self.list_of_function = functions['list_of_function']
+
         def reset_state(self):
             self.list_of_function = []
 
@@ -196,6 +204,21 @@ class Commands:
         self._state.save_state()
         return self
 
+    def load_from_file(self):
+        for i in range(len(self.parent_window.entries.entries_list)):
+            self.parent_window.entries.destroy_entry(0)
+        self.__forget_canvas()
+        self.__forget_navigation()
+        plot_button = self.parent_window.get_button_by_name('plot')
+        if plot_button:
+            plot_button.pack_forget()
+        self.parent_window.add_button('plot', 'Plot', 'plot', hot_key='<Return>')
+        self._state.load_state()
+        for i in range(len(self._state.list_of_function)):
+            self.parent_window.entries.add_entry()
+            entry = self.parent_window.entries.entries_list[i]
+            entry.insert(0, self._state.list_of_function[i])
+        self.plot()
 
 # class for buttons storage (класс для хранения кнопок)
 class Buttons:
@@ -269,6 +292,7 @@ class App(Tk):
 
         file_menu = Menu(menu)
         file_menu.add_command(label="Save as...", command=self.commands.get_command_by_name('save_as'))
+        file_menu.add_command(label="Open file...", command=self.commands.get_command_by_name('load_from_file'))
         menu.add_cascade(label="File", menu=file_menu)
 
 
@@ -286,6 +310,7 @@ if __name__ == "__main__":
     commands_main.add_command('plot', commands_main.plot)
     commands_main.add_command('add_func', commands_main.add_func)
     commands_main.add_command('save_as', commands_main.save_as)
+    commands_main.add_command('load_from_file', commands_main.load_from_file)
     commands_main.add_command('delete_func', commands_main.delete_func)
     # init app (создаем экземпляр приложения)
     app = App(buttons_main, plotter_main, commands_main, entries_main)
